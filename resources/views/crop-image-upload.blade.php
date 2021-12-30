@@ -11,6 +11,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.js"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <style type="text/css">
     img {
@@ -74,8 +75,6 @@
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-primary" id="crop">Crop</button>
 
-                        <button sub type="submit" class="btn btn-warning">Store</button>
-
                     </div>
                 </div>
             </div>
@@ -86,7 +85,14 @@
         var image = document.getElementById('image');
         var cropper;
         $("body").on("change", ".image", function(e) {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
             var files = e.target.files;
+
             var done = function(url) {
                 image.src = url;
                 $modal.modal('show');
@@ -128,55 +134,38 @@
 
 
         $("#crop").click(function() {
+            var fileName = $('.image');
+            var newFileName = fileName[0].files[0].name
+            console.log();
             canvas = cropper.getCroppedCanvas({
                 width: 500,
                 height: 500,
             });
-            toDataURL('image/jpeg')
-            // canvas.console.log(canvas)
-            // canvas.toBlob(function(blob) {
-            //     url = URL.createObjectURL(blob);
-            //     var reader = new FileReader();
-            //     reader.readAsDataURL(blob);
-            //     reader.onloadend = function() {
-            //         var base64data = reader.result;
-            //         $.ajax({
-            //             type: "POST",
-            //             dataType: "json",
-            //             url: "crop-image-upload",
-            //             data: {
-            //                 '_token': $('meta[name="_token"]').attr('content'),
-            //                 'image': base64data
-            //             },
-            //             success: function(data) {
-            //                 console.log(data);
-            //                 $modal.modal('hide');
-            //                 alert("Crop image successfully uploaded");
-            //             }
-            //         });
 
+            canvas.toBlob((blob) => {
+                const formData = new FormData();
 
-            //     }
-            // });
+                // Pass the image file name as the third parameter if necessary.
+                formData.append('croppedImage', blob, newFileName);
+
+                // Use `jQuery.ajax` method for example
+                $.ajax({
+                    url: 'store',
+                    method: 'POST',
+                    dataType: "json",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success(data) {
+                        $modal.modal('hide');
+                        console.log(data);
+                    },
+                    error() {
+                        console.log('Upload error');
+                    },
+                });
+            } /*, 'image/png' */ );
         })
-
-
-
-
-
-        // $.ajax({
-        //     type: "POST",
-        //     dataType: "json",
-        //     url: "/store",
-        //     data: { '_token': $('meta[name="_token"]').attr('content'), 'image': base64data },
-        //     success: function (data) {
-        //         console.log(data);
-        //         $modal.modal('hide');
-        //         alert("Crop image successfully uploaded");
-        //     }
-        // });
-
-
     </script>
 </body>
 

@@ -27,15 +27,15 @@ class CropImageController extends Controller
 
         $imageName = uniqid() . '.png';
 
-        $imageFullPath = $folderPath.$imageName;
+        $imageFullPath = $folderPath . $imageName;
 
         file_put_contents($imageFullPath, $image_base64);
 
-         $saveFile = new Picture;
-         $saveFile->name = $imageName;
-         $saveFile->save();
+        $saveFile = new Picture;
+        $saveFile->name = $imageName;
+        $saveFile->save();
 
-        return response()->json(['success'=>'Crop Image Uploaded Successfully']);
+        return response()->json(['success' => 'Crop Image Uploaded Successfully']);
         // return response()->json($some);
     }
     public function store(Request $request)
@@ -43,38 +43,11 @@ class CropImageController extends Controller
 
         $user = auth()->user();
 
-        // return $request->all();
-        // $some = $request->all();
-        // return response()->json($some);
+        $some = $request->all();
 
-        // $folderPath = public_path('upload/');
+        $user->addMedia($request->croppedImage)->toMediaCollection();
 
-        // $image_parts = explode(";base64,", $request->image);
-        // $image_type_aux = explode("image/", $image_parts[0]);
-        // $image_type = $image_type_aux[1];
-        // $image_base64 = base64_decode($image_parts[1]);
-
-        // $imageName = uniqid() . '.png';
-
-        // $imageFullPath = $folderPath.$imageName;
-
-        // file_put_contents($imageFullPath, $image_base64);
-
-        //  $saveFile = new Picture;
-        //  $saveFile->name = $imageName;
-        //  $saveFile->save();
-
-         $user->addMedia($request->image)->toMediaCollection();
-
-        return response()->json(['success'=>'Crop Image Uploaded Successfully']);
-        // return response()->json($some);
+        return response()->json($some);
     }
-
-    public function test(Request $request)
-    {
-        return $request->all();
-    }
-
-
 
 }
